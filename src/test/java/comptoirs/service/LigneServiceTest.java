@@ -9,8 +9,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import jakarta.validation.ConstraintViolationException;
 
+import java.util.NoSuchElementException;
+
 @SpringBootTest
- // Ce test est basé sur le jeu de données dans "test_data.sql"
+        // Ce test est basé sur le jeu de données dans "test_data.sql"
 class LigneServiceTest {
     static final int NUMERO_COMMANDE_DEJA_LIVREE = 99999;
     static final int NUMERO_COMMANDE_PAS_LIVREE  = 99998;
@@ -28,13 +30,44 @@ class LigneServiceTest {
     void onPeutAjouterDesLignesSiPasLivre() {
         var ligne = service.ajouterLigne(NUMERO_COMMANDE_PAS_LIVREE, REFERENCE_PRODUIT_DISPONIBLE_1, 1);
         assertNotNull(ligne.getId(),
-        "La ligne doit être enregistrée, sa clé générée"); 
+                "La ligne doit être enregistrée, sa clé générée");
     }
 
     @Test
     void laQuantiteEstPositive() {
-        assertThrows(ConstraintViolationException.class, 
-            () -> service.ajouterLigne(NUMERO_COMMANDE_PAS_LIVREE, REFERENCE_PRODUIT_DISPONIBLE_1, 0),
-            "La quantite d'une ligne doit être positive");
+        assertThrows(ConstraintViolationException.class,
+                () -> service.ajouterLigne(NUMERO_COMMANDE_PAS_LIVREE, REFERENCE_PRODUIT_DISPONIBLE_1, 0),
+                "La quantite d'une ligne doit être positive");
     }
+
+    @Test
+    void testCommandeNExistePas(){
+
+        assertThrows(Exception.class,
+                () -> service.ajouterLigne(99, 98, 20));
+    }
+
+    @Test
+    void testProduitNExistePas(){
+        assertThrows(Exception.class,
+                () -> service.ajouterLigne(99999, 4, 20));
+    }
+
+    @Test
+    void testCommandeDejaEnvoyee(){
+        assertThrows(Exception.class,
+                () -> service.ajouterLigne(99999, 98, 15));
+    }
+
+    @Test
+    void testQuantitéStockSuffisante(){
+        assertThrows(IllegalArgumentException.class,
+                () -> service.ajouterLigne(99998, 98, 150));
+    }
+
+    @Test
+    void testQuantiteCommandeeIncrementee(){
+
+    }
+
 }
